@@ -3,7 +3,7 @@
 
 from collections import defaultdict
 
-from odoo import _, api, exceptions, fields, models
+from odoo import api, exceptions, fields, models
 
 from odoo.addons.base_sparse_field.models.fields import Serialized
 
@@ -15,7 +15,7 @@ class StockLocation(models.Model):
         comodel_name="stock.location.tray.type", ondelete="restrict"
     )
     cell_in_tray_type_id = fields.Many2one(
-        string="Cell Tray Type", related="location_id.tray_type_id", readonly=True
+        string="Cell Tray Type", related="location_id.tray_type_id"
     )
     tray_cell_contains_stock = fields.Boolean(
         compute="_compute_tray_cell_contains_stock",
@@ -92,6 +92,7 @@ class StockLocation(models.Model):
                 "view_type": "form",
                 "view_id": view.id,
                 "views": [(view.id, "form")],
+                "target": "new",
             }
         )
         return action
@@ -105,8 +106,11 @@ class StockLocation(models.Model):
     def _check_before_add_tray_type(self):
         if not self.tray_type_id and self.child_ids:
             raise exceptions.UserError(
-                _("Location %s has sub-locations, it cannot be converted to a tray.")
-                % (self.display_name)
+                self.env._(
+                    "Location %(display_name)s has sub-locations, "
+                    "it cannot be converted to a tray.",
+                    display_name=self.display_name,
+                )
             )
 
     def write(self, vals):
@@ -121,7 +125,7 @@ class StockLocation(models.Model):
             if not trays_to_update and "cell_name_format" in vals:
                 new_format = vals.get("cell_name_format")
                 trays_to_update = location.cell_name_format != new_format
-            super(StockLocation, location).write(vals)
+            super().write(vals)
             if trays_to_update:
                 self._update_tray_sublocations()
             elif "posz" in vals and location.tray_type_id:
@@ -161,7 +165,7 @@ class StockLocation(models.Model):
         cells = location.tray_type_id._generate_cells_matrix()
         for cell in location.child_ids:
             if cell.tray_cell_contains_stock:
-                # 1 means used
+                # 1 mean used
                 cells[cell.posy - 1][cell.posx - 1] = 1
         return cells
 
@@ -208,10 +212,10 @@ class StockLocation(models.Model):
         Called from stock_location_tray/demo/stock_location_demo.xml.
         """
         xmlids_to_create = []
+        ModelData = self.env["ir.model.data"]
 
         def has_ref(xmlid):
-            ModelData = self.env["ir.model.data"]
-            __, res_id = ModelData.xmlid_to_res_model_res_id(xmlid)
+            __, res_id = ModelData._xmlid_to_res_model_res_id(xmlid)
             return bool(res_id)
 
         for location in self:
@@ -228,9 +232,8 @@ class StockLocation(models.Model):
             namespace, tray_name = tray_external_id.split(".")
             if module != namespace:
                 continue
-            tray_external = self.env["ir.model.data"].browse(
-                self.env["ir.model.data"]._get_id(module, tray_name)
-            )
+            xmlid = f"{module}.{tray_name}"
+            tray_external = ModelData.browse(ModelData._xmlid_lookup(xmlid)[1])
             cell_external_id = f"{tray_name}_x{location.posx}y{location.posy}"
             cell_xmlid = f"{module}.{cell_external_id}"
             if not has_ref(cell_xmlid):
@@ -244,4 +247,4 @@ class StockLocation(models.Model):
                     }
                 )
 
-        self.env["ir.model.data"].create(xmlids_to_create)
+        ModelData.create(xmlids_to_create)
