@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <odoo>
     <record id="view_stock_move_line_operation_tree" model="ir.ui.view">
-        <field name="name">stock.move.line.operations.tree.vertical.lift</field>
+        <field name="name">stock.move.line.operations.list.vertical.lift</field>
         <field name="model">stock.move.line</field>
         <field
             name="inherit_id"
@@ -14,8 +14,7 @@
                     string="Fetch Source Tray"
                     type="object"
                     icon="fa-hand-paper-o"
-                    attrs="{'invisible': [('tray_source_matrix', '=', {})]}"
-                    invisible="not context.get('show_source_location')"
+                    invisible="not context.get('show_source_location') and not tray_source_matrix"
                     groups="stock.group_stock_multi_locations"
                 />
             </button>
@@ -25,8 +24,7 @@
                     string="Fetch Destination Tray"
                     type="object"
                     icon="fa-hand-paper-o"
-                    attrs="{'invisible': [('tray_dest_matrix', '=', {})]}"
-                    invisible="not context.get('show_destination_location')"
+                    invisible="not context.get('show_destination_location') and not tray_dest_matrix"
                     groups="stock.group_stock_multi_locations"
                 />
             </button>

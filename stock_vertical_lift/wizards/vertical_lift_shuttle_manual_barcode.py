@@ -8,7 +8,7 @@ class VerticalLiftShuttleManualBarcode(models.TransientModel):
     _name = "vertical.lift.shuttle.manual.barcode"
     _description = "Action to input a barcode"
 
-    barcode = fields.Char(string="Barcode")
+    barcode = fields.Char()
 
     def button_save(self):
         active_id = self.env.context.get("active_id")

@@ -4,7 +4,7 @@
 import logging
 from collections import namedtuple
 
-from odoo import _, api, fields, models
+from odoo import api, fields, models
 
 from odoo.addons.base_sparse_field.models.fields import Serialized
 
@@ -22,7 +22,7 @@ def split_other_move_lines(move, move_lines):
     """
     other_move_lines = move.move_line_ids - move_lines
     if other_move_lines or move.state == "partially_available":
-        qty_to_split = move.product_uom_qty - sum(move_lines.mapped("product_uom_qty"))
+        qty_to_split = move.product_uom_qty - sum(move_lines.mapped("quantity"))
         backorder_move_vals = move._split(qty_to_split)
         backorder_move = move.create(backorder_move_vals)
         if not backorder_move:
@@ -53,25 +53,18 @@ def extract_and_action_done(move):
     if not moves:
         return False
     for picking in moves.picking_id:
-        moves_todo = picking.move_lines & moves
-        if moves_todo == picking.move_lines:
+        moves_todo = picking.move_ids & moves
+        if moves_todo == picking.move_ids:
             # No need to create a new transfer if we are processing all moves
             new_picking = picking
         else:
             new_picking = picking.copy(
                 {
                     "name": "/",
-                    "move_lines": [],
+                    "move_ids": [],
                     "move_line_ids": [],
                     "backorder_id": picking.id,
                 }
-            )
-            new_picking.message_post(
-                body=_(
-                    "Created from backorder "
-                    "<a href=# data-oe-model=stock.picking data-oe-id=%d>%s</a>."
-                )
-                % (picking.id, picking.name)
             )
             moves_todo.write({"picking_id": new_picking.id})
             moves_todo.package_level_id.write({"picking_id": new_picking.id})
@@ -81,7 +74,7 @@ def extract_and_action_done(move):
             )
             new_picking.action_assign()
             assert new_picking.state == "assigned"
-        new_picking._action_done()
+        new_picking.button_validate()
     return True
 
 
@@ -95,11 +88,11 @@ class VerticalLiftOperationBase(models.AbstractModel):
     _inherit = "barcodes.barcode_events_mixin"
     _description = "Vertical Lift Operation - Base"
 
-    name = fields.Char(related="shuttle_id.name", readonly=True)
+    name = fields.Char(related="shuttle_id.name")
     shuttle_id = fields.Many2one(
         comodel_name="vertical.lift.shuttle", required=True, readonly=True
     )
-    location_id = fields.Many2one(related="shuttle_id.location_id", readonly=True)
+    location_id = fields.Many2one(related="shuttle_id.location_id")
     number_of_ops = fields.Integer(
         compute="_compute_number_of_ops", string="Number of Operations"
     )
@@ -107,7 +100,7 @@ class VerticalLiftOperationBase(models.AbstractModel):
         compute="_compute_number_of_ops_all",
         string="Number of Operations in all shuttles",
     )
-    mode = fields.Selection(related="shuttle_id.mode", readonly=True)
+    mode = fields.Selection(related="shuttle_id.mode")
 
     state = fields.Selection(
         selection=lambda self: self._selection_states(),
@@ -317,14 +310,15 @@ class VerticalLiftOperationBase(models.AbstractModel):
         return {"product": product}
 
     def _get_tray_qty(self, product, location):
-        quants = self.env["stock.quant"].search(
-            [("location_id", "=", location.id), ("product_id", "=", product.id)]
+        domain = [("location_id", "=", location.id), ("product_id", "=", product.id)]
+        grouped_data = self.env["stock.quant"].read_group(
+            domain=domain, fields=["quantity"], groupby=[]
         )
-        return sum(quants.mapped("quantity"))
+        return grouped_data[0]["quantity"] if grouped_data else 0.0
 
     def _rainbow_man(self, message=None):
         if not message:
-            message = _("Congrats, you cleared the queue!")
+            message = self.env._("Congrats, you cleared the queue!")
         return {
             "effect": {
                 "fadeout": "slow",
@@ -351,7 +345,9 @@ class VerticalLiftOperationBase(models.AbstractModel):
             "action": "refresh",
             "params": self._get_user_notification_params(),
         }
-        self.env["bus.bus"].sendone(channel, bus_message)
+        self.env["bus.listener.mixin"]._bus_send(
+            "notification", bus_message, subchannel=channel
+        )
 
     def _get_user_notification_params(self):
         return {
@@ -380,7 +376,7 @@ class VerticalLiftOperationTransfer(models.AbstractModel):
         compute="_compute_tray_data",
         string="Tray Location",
     )
-    tray_name = fields.Char(compute="_compute_tray_data", string="Tray Name")
+    tray_name = fields.Char(compute="_compute_tray_data")
     tray_type_id = fields.Many2one(
         comodel_name="stock.location.tray.type",
         compute="_compute_tray_data",
@@ -393,28 +389,17 @@ class VerticalLiftOperationTransfer(models.AbstractModel):
     tray_qty = fields.Float(string="Stock Quantity", compute="_compute_tray_qty")
 
     # current operation information
-    picking_id = fields.Many2one(
-        related="current_move_line_id.picking_id", readonly=True
-    )
-    picking_origin = fields.Char(
-        related="current_move_line_id.picking_id.origin", readonly=True
-    )
+    picking_id = fields.Many2one(related="current_move_line_id.picking_id")
+    picking_origin = fields.Char(related="current_move_line_id.picking_id.origin")
     picking_partner_id = fields.Many2one(
-        related="current_move_line_id.picking_id.partner_id", readonly=True
+        related="current_move_line_id.picking_id.partner_id"
     )
-    product_id = fields.Many2one(
-        related="current_move_line_id.product_id", readonly=True
-    )
-    product_uom_id = fields.Many2one(
-        related="current_move_line_id.product_uom_id", readonly=True
-    )
-    product_uom_qty = fields.Float(
-        related="current_move_line_id.product_uom_qty", readonly=True
-    )
+    product_id = fields.Many2one(related="current_move_line_id.product_id")
+    product_uom_id = fields.Many2one(related="current_move_line_id.product_uom_id")
+    quantity = fields.Float(related="current_move_line_id.quantity")
     product_packagings = fields.Html(
         string="Packaging", compute="_compute_product_packagings"
     )
-    qty_done = fields.Float(related="current_move_line_id.qty_done", readonly=True)
     lot_id = fields.Many2one(related="current_move_line_id.lot_id", readonly=True)
     location_dest_id = fields.Many2one(
         string="Destination",
@@ -458,10 +443,14 @@ class VerticalLiftOperationTransfer(models.AbstractModel):
             location = record.tray_location_id
             record.tray_qty = self._get_tray_qty(product, location)
 
-    @api.depends("current_move_line_id")
+    @api.depends("current_move_line_id", "mode")
     def _compute_tray_data(self):
+        modes = {
+            "pick": "location_id",
+            "put": "location_dest_id",
+            "inventory": "location_id",
+        }
         for record in self:
-            modes = {"pick": "location_id", "put": "location_dest_id"}
             location = record.current_move_line_id[modes[record.mode]]
             tray_type = location.location_id.tray_type_id
             # this is the current cell
@@ -497,7 +486,6 @@ class VerticalLiftOperationTransfer(models.AbstractModel):
     def process_current(self):
         line = self.current_move_line_id
         if line.state in ("assigned", "partially_available"):
-            line.qty_done = line.product_qty
             # if the move has other move lines, it is split to have only this move line
             split_other_move_lines(line.move_id, line)
             extract_and_action_done(line.move_id)
@@ -508,7 +496,7 @@ class VerticalLiftOperationTransfer(models.AbstractModel):
 
     def reset_steps(self):
         self.clear_current_move_line()
-        super().reset_steps()
+        return super().reset_steps()
 
     def clear_current_move_line(self):
         self.current_move_line_id = False

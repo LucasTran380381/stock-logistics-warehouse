@@ -3,7 +3,7 @@
 
 from itertools import cycle
 
-from odoo import _, models
+from odoo import models
 
 
 class VerticalLiftOperationPick(models.Model):
@@ -62,7 +62,9 @@ class VerticalLiftOperationPick(models.Model):
                 self.next_step()
             else:
                 self.env.user.notify_warning(
-                    _("No location found for barcode {}").format(barcode),
+                    self.env._(
+                        "No location found for barcode %(barcode)s", barcode=barcode
+                    ),
                     params=self._get_user_notification_params(),
                 )
 

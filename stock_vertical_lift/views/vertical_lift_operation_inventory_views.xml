@@ -21,37 +21,22 @@
             <form position="attributes">
                 <attribute name="string">Inventory Screen</attribute>
             </form>
-            <form position="inside">
-                <field name="state" invisible="1" />
-            </form>
             <button name="button_save" position="attributes">
                 <attribute
-                    name="attrs"
-                >{'invisible': [('state', 'not in', ('quantity', 'confirm_wrong_quantity'))]}</attribute>
+                    name="invisible"
+                >state not in ('quantity', 'confirm_wrong_quantity')</attribute>
             </button>
             <button name="button_release" position="attributes">
                 <attribute name="invisible">1</attribute>
             </button>
             <xpath expr="//div[hasclass('o_shuttle_data')]" position="attributes">
-                <attribute
-                    name="attrs"
-                >{'invisible': [('current_inventory_line_id', '=', False)]}</attribute>
+                <attribute name="invisible">not quant_id</attribute>
             </xpath>
             <xpath expr="//div[hasclass('o_shuttle_data')]" position="inside">
                 <!-- on the left of the screen -->
                 <div class="o_shuttle_data_content o_shuttle_move">
                     <div>
                         <group>
-                            <field name="current_inventory_line_id" invisible="1" />
-                            <div>
-                                <div>
-                                    <field
-                                        name="inventory_id"
-                                        options="{'no_open': True}"
-                                        class="mr8"
-                                    />
-                                </div>
-                            </div>
                             <label for="product_id" />
                             <div colspan="2" class="oe_title">
                                 <h1>
@@ -77,7 +62,7 @@
                                         name="quantity_input"
                                         default_focus="1"
                                         class="oe_inline"
-                                        attrs="{'readonly': [('state', 'not in', ('quantity', 'confirm_wrong_quantity'))]}"
+                                        readonly="state not in ('quantity', 'confirm_wrong_quantity')"
                                     />
                                     <field
                                         name="product_uom_id"

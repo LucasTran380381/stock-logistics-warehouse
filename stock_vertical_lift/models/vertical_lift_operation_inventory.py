@@ -78,9 +78,7 @@ class VerticalLiftOperationInventory(models.Model):
             ),
         )
 
-    current_inventory_line_id = fields.Many2one(
-        comodel_name="stock.inventory.line", readonly=True
-    )
+    quant_id = fields.Many2one("stock.quant", string="Current Quant")
 
     quantity_input = fields.Float()
     # if the quantity is wrong, user has to write 2 times
@@ -92,7 +90,7 @@ class VerticalLiftOperationInventory(models.Model):
         compute="_compute_tray_data",
         string="Tray Location",
     )
-    tray_name = fields.Char(compute="_compute_tray_data", string="Tray Name")
+    tray_name = fields.Char(compute="_compute_tray_data")
     tray_type_id = fields.Many2one(
         comodel_name="stock.location.tray.type",
         compute="_compute_tray_data",
@@ -104,33 +102,19 @@ class VerticalLiftOperationInventory(models.Model):
     tray_matrix = Serialized(string="Cells", compute="_compute_tray_data")
     tray_qty = fields.Float(string="Stock Quantity", compute="_compute_tray_qty")
 
-    # current operation information
-    inventory_id = fields.Many2one(
-        related="current_inventory_line_id.inventory_id", readonly=True
-    )
-    product_id = fields.Many2one(
-        related="current_inventory_line_id.product_id", readonly=True
-    )
-    product_uom_id = fields.Many2one(
-        related="current_inventory_line_id.product_uom_id", readonly=True
-    )
-    product_qty = fields.Float(
-        related="current_inventory_line_id.product_qty", readonly=True
-    )
+    product_id = fields.Many2one(related="quant_id.product_id")
+    product_uom_id = fields.Many2one(related="quant_id.product_uom_id")
+    product_qty = fields.Float(related="quant_id.inventory_quantity")
     product_packagings = fields.Html(
         string="Packaging", compute="_compute_product_packagings"
     )
-    package_id = fields.Many2one(
-        related="current_inventory_line_id.package_id", readonly=True
-    )
-    lot_id = fields.Many2one(
-        related="current_inventory_line_id.prod_lot_id", readonly=True
-    )
+    package_id = fields.Many2one(related="quant_id.package_id")
+    lot_id = fields.Many2one(related="quant_id.lot_id")
 
-    @api.depends("current_inventory_line_id")
+    @api.depends("quant_id")
     def _compute_tray_data(self):
         for record in self:
-            location = record.current_inventory_line_id.location_id
+            location = record.quant_id.location_id
             tray_type = location.location_id.tray_type_id
             # this is the current cell
             record.tray_location_id = location.id
@@ -142,44 +126,44 @@ class VerticalLiftOperationInventory(models.Model):
             record.tray_y = location.posy
             record.tray_matrix = location.tray_matrix
 
-    @api.depends("current_inventory_line_id.product_id.packaging_ids")
+    @api.depends("quant_id.product_id.packaging_ids")
     def _compute_product_packagings(self):
         for record in self:
-            product = record.current_inventory_line_id.product_id
+            product = record.quant_id.product_id
             if not product:
                 record.product_packagings = ""
                 continue
             content = self._render_product_packagings(product)
             record.product_packagings = content
 
-    @api.depends("tray_location_id", "current_inventory_line_id.product_id")
+    @api.depends("tray_location_id", "quant_id.product_id")
     def _compute_tray_qty(self):
         for record in self:
-            if not (record.tray_location_id and record.current_inventory_line_id):
+            if not (record.tray_location_id and record.quant_id):
                 record.tray_qty = 0.0
                 continue
-            product = record.current_inventory_line_id.product_id
+            product = record.quant_id.product_id
             location = record.tray_location_id
             record.tray_qty = self._get_tray_qty(product, location)
 
     def _compute_number_of_ops(self):
         for record in self:
-            line_model = self.env["stock.inventory.line"]
+            line_model = self.env["stock.quant"]
             record.number_of_ops = line_model.search_count(
-                self._domain_inventory_lines_to_do()
+                self._domain_stock_quant_to_do()
             )
 
     def _compute_number_of_ops_all(self):
         for record in self:
-            line_model = self.env["stock.inventory.line"]
+            line_model = self.env["stock.quant"]
             record.number_of_ops_all = line_model.search_count(
                 self._domain_inventory_lines_to_do_all()
             )
 
-    def _domain_inventory_lines_to_do(self):
+    def _domain_stock_quant_to_do(self):
         return [
             ("location_id", "child_of", self.location_id.id),
-            ("state", "=", "confirm"),
+            ("inventory_quantity_set", "=", True),
             ("vertical_lift_done", "=", False),
         ]
 
@@ -189,21 +173,21 @@ class VerticalLiftOperationInventory(models.Model):
         )
         return [
             ("location_id", "child_of", shuttle_locations.ids),
-            ("state", "=", "confirm"),
+            ("inventory_quantity_set", "=", True),
             ("vertical_lift_done", "=", False),
         ]
 
     def reset_steps(self):
         self.clear_current_inventory_line()
-        super().reset_steps()
+        return super().reset_steps()
 
     def _has_identical_quantity(self):
-        line = self.current_inventory_line_id
+        stock_quant = self.quant_id
         return (
             float_compare(
-                line.theoretical_qty,
+                stock_quant.quantity,
                 self.quantity_input,
-                precision_rounding=line.product_uom_id.rounding,
+                precision_rounding=stock_quant.product_uom_id.rounding,
             )
             == 0
         )
@@ -223,36 +207,34 @@ class VerticalLiftOperationInventory(models.Model):
             {
                 "quantity_input": 0.0,
                 "last_quantity_input": 0.0,
-                "current_inventory_line_id": False,
+                "quant_id": False,
             }
         )
         return True
 
     def fetch_tray(self):
-        location = self.current_inventory_line_id.location_id
+        location = self.quant_id.location_id
         location.fetch_vertical_lift_tray()
 
     def select_next_inventory_line(self):
         self.ensure_one()
-        next_line = self.env["stock.inventory.line"].search(
-            self._domain_inventory_lines_to_do(),
+        next_quant_id = self.env["stock.quant"].search(
+            self._domain_stock_quant_to_do(),
             limit=1,
             order="vertical_lift_tray_id, location_id, id",
         )
-        self.current_inventory_line_id = next_line
-        if next_line:
+        self.quant_id = next_quant_id
+        if next_quant_id:
             self.fetch_tray()
-        return bool(next_line)
+        return bool(next_quant_id)
 
     def process_current(self):
-        line = self.current_inventory_line_id
-        if not line.vertical_lift_done:
-            line.vertical_lift_done = True
-            if self.quantity_input != line.product_qty:
-                line.product_qty = self.quantity_input
-            inventory = line.inventory_id
-            if all(line.vertical_lift_done for line in inventory.line_ids):
-                inventory.action_validate()
+        stock_quant = self.quant_id
+        if not stock_quant.vertical_lift_done:
+            stock_quant.vertical_lift_done = True
+            if self.quantity_input != stock_quant.inventory_quantity:
+                stock_quant.inventory_quantity = self.quantity_input
+                stock_quant.action_apply_inventory()
             self.quantity_input = self.last_quantity_input = 0.0
         return True
 

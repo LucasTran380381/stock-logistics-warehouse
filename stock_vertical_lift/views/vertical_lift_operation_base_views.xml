@@ -27,73 +27,77 @@
         <field name="model">vertical.lift.operation.base</field>
         <field name="arch" type="xml">
             <form string="Operations" delete="0" create="0" class="o_vlift_shuttle">
-                <div class="o_shuttle_header">
-                    <div class="o_shuttle_header_left o_shuttle_header_content">
-                        <field name="name" readonly="1" />
-                    </div>
-                    <div class="o_shuttle_header_center o_shuttle_header_content">
-                        <label for="mode" />
-                        <field name="mode" readonly="1" />
-                    </div>
-                    <div class="o_shuttle_header_right o_shuttle_header_content">
-                        <label for="number_of_ops" />
-                        <field name="number_of_ops" readonly="1" />
-                        <span>/</span>
-                        <field name="number_of_ops_all" readonly="1" />
-                    </div>
-                </div>
-                <div class="o_shuttle_actions">
-                    <div class="o_shuttle_content o_shuttle_content_left">
-                        <button
-                            name="action_menu"
-                            type="object"
-                            class="btn-secondary o_shuttle_icon_btn"
-                            string=""
-                            icon="fa-bars"
-                            aria-label="Dropdown menu"
-                            title="Dropdown menu"
-                        />
-                        <button
-                            name="action_manual_barcode"
-                            type="object"
-                            class="btn-secondary o_shuttle_icon_btn"
-                            string=""
-                            icon="fa-terminal"
-                            aria-label="Barcode Input"
-                            title="Barcode Input"
-                        />
-                    </div>
-                    <div class="o_shuttle_content o_shuttle_content_right">
-                        <div>
-                            <!-- will react on barcode 'O-BTN.save' -->
-                            <button
-                                name="button_save"
-                                type="object"
-                                string="Save"
-                                icon="fa-check"
-                                class="btn-primary"
-                                barcode_trigger="save"
-                                attrs="{'invisible': [('state', '!=', 'save')]}"
-                            />
-                            <!-- will react on barcode 'O-BTN.release -->
-                            <button
-                                name="button_release"
-                                type="object"
-                                string="Release"
-                                class="btn-primary"
-                                barcode_trigger="release"
-                                attrs="{'invisible': [('state', '!=', 'release')]}"
-                            />
+                <div class="o_vlift_shuttle">
+                    <div class="o_shuttle_header">
+                        <div class="o_shuttle_header_left o_shuttle_header_content">
+                            <field name="name" readonly="1" />
+                        </div>
+                        <div class="o_shuttle_header_center o_shuttle_header_content">
+                            <label for="mode" />
+                            <field name="mode" readonly="1" />
+                        </div>
+                        <div class="o_shuttle_header_right o_shuttle_header_content">
+                            <label for="number_of_ops" />
+                            <field name="number_of_ops" readonly="1" />
+                            <span>/</span>
+                            <field name="number_of_ops_all" readonly="1" />
                         </div>
                     </div>
-                </div>
-                <div class="o_shuttle_operation bg-primary jumbotron jumbotron-fluid">
-                    <div class="container">
-                        <field name="state" invisible="0" readonly="True" />
+                    <div class="o_shuttle_actions">
+                        <div class="o_shuttle_content o_shuttle_content_left">
+                            <button
+                                name="action_menu"
+                                type="object"
+                                class="btn-secondary o_shuttle_icon_btn"
+                                string=""
+                                icon="fa-bars"
+                                aria-label="Dropdown menu"
+                                title="Dropdown menu"
+                            />
+                            <button
+                                name="action_manual_barcode"
+                                type="object"
+                                class="btn-secondary o_shuttle_icon_btn"
+                                string=""
+                                icon="fa-terminal"
+                                aria-label="Barcode Input"
+                                title="Barcode Input"
+                            />
+                        </div>
+                        <div class="o_shuttle_content o_shuttle_content_right">
+                            <div>
+                                <!-- will react on barcode 'O-BTN.save' -->
+                                <button
+                                    name="button_save"
+                                    type="object"
+                                    string="Save"
+                                    icon="fa-check"
+                                    class="btn-primary"
+                                    barcode_trigger="save"
+                                    invisible="state != 'save'"
+                                />
+                                <!-- will react on barcode 'O-BTN.release -->
+                                <button
+                                    name="button_release"
+                                    type="object"
+                                    string="Release"
+                                    class="btn-primary"
+                                    barcode_trigger="release"
+                                    invisible="state != 'release'"
+                                />
+                            </div>
+                        </div>
                     </div>
+                    <div
+                        class="o_shuttle_operation bg-primary jumbotron jumbotron-fluid"
+                    >
+                        <div class="container">
+                            <field name="state" invisible="0" readonly="True" />
+                        </div>
+                    </div>
+                    <div class="o_shuttle_data" />
+                    <field name="_barcode_scanned" widget="barcode_handler" />
                 </div>
-                <div class="o_shuttle_data" />
-                <field name="_barcode_scanned" widget="barcode_handler" />
             </form>
         </field>
     </record>
@@ -104,16 +108,13 @@
         <field name="mode">primary</field>
         <field name="arch" type="xml">
             <xpath expr="//div[hasclass('o_shuttle_data')]" position="attributes">
-                <attribute
-                    name="attrs"
-                >{'invisible': [('current_move_line_id', '=', False)]}</attribute>
+                <attribute name="invisible">not current_move_line_id</attribute>
             </xpath>
             <xpath expr="//div[hasclass('o_shuttle_data')]" position="inside">
                 <!-- on the left of the screen -->
                 <div class="o_shuttle_data_content o_shuttle_move">
                     <div>
                         <group>
-                            <field name="current_move_line_id" invisible="1" />
                             <label for="picking_id" />
                             <div>
                                 <div>
@@ -158,15 +159,11 @@
                                 <field name="product_packagings" />
                             </div>
                             <field name="lot_id" />
-                            <label
-                                for="product_uom_qty"
-                                string="Quantity"
-                                class="ml32"
-                            />
+                            <label for="quantity" string="Quantity" class="ml32" />
                             <div colspan="2" class="ml32">
                                 <h1 class="bg-primary o_shuttle_highlight">
                                     <field
-                                        name="product_uom_qty"
+                                        name="quantity"
                                         class="oe_inline text-white"
                                     />
                                     <field
@@ -182,10 +179,9 @@
                 <!-- on the right of the screen -->
                 <div
                     class="o_shuttle_data_content o_shuttle_tray"
-                    attrs="{'invisible': [('tray_type_id', '=', False)]}"
+                    invisible="not tray_type_id"
                 >
                     <group col="1">
-                        <field name="tray_type_id" invisible="1" />
                         <field name="tray_name" />
                         <field name="tray_type_code" />
                         <field name="tray_x" />

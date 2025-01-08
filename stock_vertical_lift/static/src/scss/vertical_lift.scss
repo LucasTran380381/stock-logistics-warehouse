@@ -1,7 +1,7 @@
-.o_web_client.o_fullscreen {
+.o_web_client {
     $o-shuttle-padding: $o-horizontal-padding;
 
-    .o_form_view.o_vlift_shuttle {
+    .o_vlift_shuttle {
         display: flex;
         flex-flow: column nowrap;
         padding: 0;
@@ -125,11 +125,5 @@
             font-size: 2em;
             text-transform: uppercase;
         }
-    }
-
-    footer .btn {
-        padding: 1em;
-        font-size: 2em;
-        text-transform: uppercase;
     }
 }

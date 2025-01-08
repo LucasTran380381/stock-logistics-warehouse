@@ -29,7 +29,7 @@
                     icon="fa-forward"
                     class="btn-danger"
                     barcode_trigger="skip"
-                    attrs="{'invisible': [('state', '=', 'noop')]}"
+                    invisible="state == 'noop'"
                 />
             </button>
         </field>

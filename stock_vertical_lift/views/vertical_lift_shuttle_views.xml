@@ -7,24 +7,24 @@
         <field name="arch" type="xml">
             <form string="Shuttle">
                 <div class="row o_vlift_shuttle_menu">
-                    <div class="col-6">
+                    <div class="col-6 d-grid gap-3">
                         <button
                             name="switch_pick"
                             type="object"
                             string="Pick"
-                            class="btn-primary btn-block btn btn-lg"
+                            class="btn-primary btn btn-lg"
                         />
                         <button
                             name="switch_put"
                             type="object"
                             string="Put"
-                            class="btn-primary btn-block btn btn-lg"
+                            class="btn-primary btn btn-lg"
                         />
                         <button
                             name="switch_inventory"
                             type="object"
                             string="Inventory"
-                            class="btn-primary btn-block btn btn-lg"
+                            class="btn-primary btn btn-lg"
                         />
                     </div>
                     <div class="col-6">
@@ -97,13 +97,13 @@
                     <group groups="base.group_no_one">
                         <label for="command_ids" />
                         <field name="command_ids" nolabel="1" colspan="2">
-                            <tree>
+                            <list>
                                 <field name="name" />
                                 <field name="command" />
                                 <field name="answer" />
                                 <field name="error" />
                                 <field name="create_date" />
-                            </tree>
+                            </list>
                         </field>
                     </group>
                 </sheet>
@@ -114,16 +114,14 @@
         <field name="name">vertical.lift.shuttle.kanban</field>
         <field name="model">vertical.lift.shuttle</field>
         <field name="arch" type="xml">
-            <kanban class="o_kanban_dashboard">
+            <kanban class="o_kanban_dashboard open_shuttle_screen">
                 <field name="name" />
                 <field name="mode" />
                 <!-- <field name="number_of_ops"/> -->
                 <!-- <field name="number_of_ops_all"/> -->
                 <templates>
-                    <t t-name="kanban-box">
-                        <div
-                            class="oe_kanban_global_click o_has_icon open_shuttle_screen"
-                        >
+                    <t t-name="card">
+                        <div class=" o_has_icon open_shuttle_screen">
                             <div class="o_vlift_kanban_main">
                                 <div class="o_kanban_card_content">
                                     <div class="o_kanban_primary_left">
@@ -159,7 +157,7 @@
                                         class="o_kanban_card_manage_section o_kanban_manage_reports"
                                     >
                                         <div role="menuitem">
-                                            <a type="edit">Settings</a>
+                                            <a type="open">Settings</a>
                                         </div>
                                     </div>
                                 </div>
@@ -183,19 +181,19 @@
         </field>
     </record>
     <record model="ir.ui.view" id="vertical_lift_shuttle_view_tree">
-        <field name="name">vertical.lift.shuttle.tree</field>
+        <field name="name">vertical.lift.shuttle.list</field>
         <field name="model">vertical.lift.shuttle</field>
         <field name="arch" type="xml">
-            <tree>
+            <list>
                 <field name="name" />
-            </tree>
+            </list>
         </field>
     </record>
     <record model="ir.actions.act_window" id="vertical_lift_shuttle_action">
         <field name="name">Vertical Lift Shuttles</field>
         <field name="type">ir.actions.act_window</field>
         <field name="res_model">vertical.lift.shuttle</field>
-        <field name="view_mode">kanban,tree,form</field>
+        <field name="view_mode">kanban,list,form</field>
         <field name="target">current</field>
         <field name="domain">[]</field>
         <field name="context">{}</field>

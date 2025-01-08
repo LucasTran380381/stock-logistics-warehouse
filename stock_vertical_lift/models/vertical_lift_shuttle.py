@@ -4,7 +4,7 @@ import logging
 import socket
 import ssl
 
-from odoo import _, fields, models
+from odoo import fields, models
 
 _logger = logging.getLogger(__name__)
 
@@ -88,7 +88,7 @@ class VerticalLiftShuttle(models.Model):
         if self.hardware == "simulation":
             self.env.user.notify_info(
                 message=payload,
-                title=_("Lift Simulation"),
+                title=self.env._("Lift Simulation"),
                 params=self._get_user_notification_params(),
             )
             return True
@@ -162,12 +162,7 @@ class VerticalLiftShuttle(models.Model):
             "res_model": operation._name,
             "views": [[self.env.ref(screen_xmlid).id, "form"]],
             "res_id": operation.id,
-            "target": "fullscreen",
-            "flags": {
-                "withControlPanel": False,
-                "form_view_initial_mode": "edit",
-                "no_breadcrumbs": True,
-            },
+            "target": "main",
         }
 
     def action_menu(self):
@@ -176,7 +171,7 @@ class VerticalLiftShuttle(models.Model):
             "type": "ir.actions.act_window",
             "res_model": "vertical.lift.shuttle",
             "views": [[self.env.ref(menu_xmlid).id, "form"]],
-            "name": _("Menu"),
+            "name": self.env._("Menu"),
             "target": "new",
             "res_id": self.id,
         }
@@ -193,7 +188,7 @@ class VerticalLiftShuttle(models.Model):
             "type": "ir.actions.act_window",
             "res_model": "vertical.lift.shuttle.manual.barcode",
             "view_mode": "form",
-            "name": _("Barcode"),
+            "name": self.env._("Barcode"),
             "target": "new",
         }
 
@@ -234,7 +229,7 @@ class VerticalLiftShuttle(models.Model):
         ``VerticalLiftShuttle._hardware_send_message()``.
         """
         if self.hardware == "simulation":
-            message = _("Releasing tray")
+            message = self.env._("Releasing tray")
             return message.encode("utf-8")
         else:
             raise NotImplementedError()

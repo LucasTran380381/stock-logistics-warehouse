@@ -18,5 +18,5 @@ class StockMove(models.Model):
             # is a related to this one).
             models = ("vertical.lift.operation.pick", "vertical.lift.operation.put")
             for model in models:
-                self.env[model].invalidate_cache(["number_of_ops", "number_of_ops_all"])
+                self.env[model].invalidate_model(["number_of_ops", "number_of_ops_all"])
         return result

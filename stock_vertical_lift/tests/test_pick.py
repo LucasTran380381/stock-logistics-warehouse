@@ -1,7 +1,10 @@
 # Copyright 2019 Camptocamp SA
 # License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl).
+import logging
 
 from .common import VerticalLiftCase
+
+_logger = logging.getLogger(__name__)
 
 
 class TestPick(VerticalLiftCase):
@@ -122,8 +125,7 @@ class TestPick(VerticalLiftCase):
         self.assertEqual(operation.picking_partner_id, ml.picking_id.partner_id)
         self.assertEqual(operation.product_id, ml.product_id)
         self.assertEqual(operation.product_uom_id, ml.product_uom_id)
-        self.assertEqual(operation.product_uom_qty, ml.product_uom_qty)
-        self.assertEqual(operation.qty_done, ml.qty_done)
+        self.assertEqual(operation.quantity, ml.quantity)
         self.assertEqual(operation.lot_id, ml.lot_id)
 
     def test_pick_count_move_lines(self):
@@ -135,10 +137,13 @@ class TestPick(VerticalLiftCase):
         )
         # If stock_picking_cancel_confirm is installed, we need to explicitly
         # confirm the cancellation.
-        try:
+        if hasattr(picking_1, "cancel_confirm"):
             picking_1.cancel_confirm = True
-        except AttributeError:
-            pass
+        else:
+            _logger.debug(
+                "stock_picking_cancel_confirm module is not installed "
+                "- skipping cancel confirmation"
+            )
         picking_1.action_cancel()
 
         # ensure that we have stock in some cells, we'll put product1
@@ -222,10 +227,10 @@ class TestPick(VerticalLiftCase):
     def test_process_current_pick(self):
         operation = self._open_screen("pick")
         operation.current_move_line_id = self.out_move_line
-        qty_to_process = self.out_move_line.product_qty
+        qty_to_process = self.out_move_line.quantity
         operation.process_current()
         self.assertEqual(self.out_move_line.state, "done")
-        self.assertEqual(self.out_move_line.qty_done, qty_to_process)
+        self.assertEqual(self.out_move_line.quantity, qty_to_process)
 
     def test_matrix(self):
         operation = self._open_screen("pick")

@@ -5,14 +5,14 @@ import os
 import unittest
 from unittest import mock
 
-from odoo.tests.common import HttpSavepointCase
+from odoo.tests.common import HttpCase
 from odoo.tools import mute_logger
 
 CTRL_PATH = "odoo.addons.stock_vertical_lift.controllers.main.VerticalLiftController"
 
 
 @unittest.skipIf(os.getenv("SKIP_HTTP_CASE"), "HttpCase skipped")
-class TestController(HttpSavepointCase):
+class TestController(HttpCase):
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
@@ -41,5 +41,5 @@ class TestController(HttpSavepointCase):
             data = {"answer": "0|test|2", "secret": "SECRET"}
             response = self.url_open("/vertical-lift", data=data)
             self.assertEqual(response.status_code, 200)
-            self.shuttle.command_ids.invalidate_cache()
+            self.shuttle.command_ids.invalidate_recordset()
             self.assertEqual(self.shuttle.command_ids[0].answer, data["answer"])

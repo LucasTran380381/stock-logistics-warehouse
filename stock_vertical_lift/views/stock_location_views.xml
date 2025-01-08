@@ -13,7 +13,7 @@
                     groups="stock.group_stock_manager"
                     class="oe_stat_button"
                     icon="fa-hand-paper-o"
-                    attrs="{'invisible': [('vertical_lift_kind', 'not in', ('tray', 'cell'))]}"
+                    invisible="vertical_lift_kind not in ('tray', 'cell')"
                 />
                 <button
                     name="button_release_vertical_lift_tray"
@@ -22,25 +22,23 @@
                     groups="stock.group_stock_manager"
                     class="oe_stat_button"
                     icon="fa-hand-rock-o"
-                    attrs="{'invisible': [('vertical_lift_kind', 'not in', ('tray', 'cell'))]}"
+                    invisible="vertical_lift_kind not in ('tray', 'cell')"
                 />
             </div>
-            <field name="return_location" position="after">
+            <field name="replenish_location" position="after">
                 <field
                     name="vertical_lift_location"
-                    attrs="{'invisible': [('vertical_lift_kind', '!=', False), ('vertical_lift_kind', '!=', 'view')]}"
+                    invisible="vertical_lift_kind != 'view'"
                 />
                 <field name="vertical_lift_kind" />
                 <field
                     name="vertical_lift_shuttle_id"
-                    attrs="{'invisible': [('vertical_lift_kind', 'not in', ('shuttle', 'tray', 'cell'))]}"
+                    invisible="vertical_lift_kind not in ('shuttle', 'tray', 'cell')"
                 />
             </field>
             <field name="tray_type_id" position="attributes">
-                <attribute name="attrs">
-                    {'invisible': [('cell_in_tray_type_id', '!=', False)],
-                     'required': [('vertical_lift_kind', '=', 'tray')]}
-                </attribute>
+                <attribute name="invisible">cell_in_tray_type_id</attribute>
+                <attribute name="required">vertical_lift_kind == 'tray'</attribute>
             </field>
         </field>
     </record>

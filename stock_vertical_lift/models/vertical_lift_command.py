@@ -2,7 +2,7 @@
 # License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl).
 import logging
 
-from odoo import _, api, exceptions, fields, models
+from odoo import api, exceptions, fields, models
 
 _logger = logging.getLogger(__name__)
 
@@ -15,9 +15,7 @@ class VerticalLiftCommand(models.Model):
     def _default_name(self):
         return self.env["ir.sequence"].next_by_code("vertical.lift.command")
 
-    name = fields.Char(
-        "Name", default=lambda s: s._default_name(), required=True, index=True
-    )
+    name = fields.Char(default=lambda s: s._default_name(), required=True, index=True)
     command = fields.Char(required=True)
     answer = fields.Char()
     error = fields.Char()
@@ -28,7 +26,7 @@ class VerticalLiftCommand(models.Model):
         record = self.search([("name", "=", name)], limit=1)
         if not record:
             _logger.error("unable to match answer to a command: %r", answer)
-            raise exceptions.UserError(_("Unknown record %s") % name)
+            raise exceptions.UserError(self.env._("Unknown record %(name)s", name=name))
         record.answer = answer
         record.shuttle_id._hardware_response_callback(record)
         return record

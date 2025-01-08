@@ -1,7 +1,6 @@
 # Copyright 2019 Camptocamp SA
 # License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl).
 
-from odoo import _
 
 from odoo.addons.stock_location_tray.tests import common
 
@@ -82,7 +81,7 @@ class VerticalLiftCase(common.LocationTrayTypeCase):
                 "partner_id": partner.id,
                 "location_id": stock_loc.id,
                 "location_dest_id": customer_loc.id,
-                "move_lines": [
+                "move_ids": [
                     (
                         0,
                         0,
@@ -111,7 +110,7 @@ class VerticalLiftCase(common.LocationTrayTypeCase):
                 "partner_id": partner.id,
                 "location_id": supplier_loc.id,
                 "location_dest_id": dest_location.id,
-                "move_lines": [
+                "move_ids": [
                     (
                         0,
                         0,
@@ -130,35 +129,27 @@ class VerticalLiftCase(common.LocationTrayTypeCase):
         )
 
     @classmethod
-    def _create_inventory(cls, products):
-        """Create a draft inventory
+    def _create_stock_quants(cls, products):
+        """Create a stock.quant to adjust inventory.
 
         Products is a list of tuples (bin location, product).
         """
-        values = {
-            "name": "Test Inventory",
-            "line_ids": [
-                (
-                    0,
-                    0,
-                    {
-                        "product_id": product.id,
-                        "product_uom_id": product.uom_id.id,
-                        "location_id": location.id,
-                    },
-                )
-                for location, product in products
-            ],
-        }
-        inventory = cls.env["stock.inventory"].create(values)
-        inventory.action_start()
-        return inventory
+        stock_quants = []
+        for location, product in products:
+            current_stock_quant = cls.env["stock.quant"].create(
+                {
+                    "product_id": product.id,
+                    "location_id": location.id,
+                    "product_uom_id": product.uom_id.id,
+                }
+            )
+            current_stock_quant.action_set_inventory_quantity()
+            stock_quants.append(current_stock_quant)
+        return stock_quants
 
     def _test_button_release(self, move_lines, expected_state):
         # for the test, we'll consider all the lines has been delivered
-        for move_line in move_lines:
-            move_line.qty_done = move_line.product_qty
-        move_lines.picking_id._action_done()
+        move_lines.picking_id.button_validate()
         # release, no further operation in queue
         operation = self.shuttle._operation_for_mode()
         # the release button can be used only in the state... release
@@ -169,7 +160,7 @@ class VerticalLiftCase(common.LocationTrayTypeCase):
         expected_result = {
             "effect": {
                 "fadeout": "slow",
-                "message": _("Congrats, you cleared the queue!"),
+                "message": self.env._("Congrats, you cleared the queue!"),
                 "img_url": "/web/static/src/img/smile.svg",
                 "type": "rainbow_man",
             }

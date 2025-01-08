@@ -1,7 +1,7 @@
 # Copyright 2019 Camptocamp SA
 # License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl).
 
-from odoo import _, api, exceptions, fields, models
+from odoo import api, exceptions, fields, models
 
 
 class StockLocation(models.Model):
@@ -9,7 +9,6 @@ class StockLocation(models.Model):
 
     vertical_lift_location = fields.Boolean(
         "Is a Vertical Lift View Location?",
-        default=False,
         help="Check this box to use it as the view for Vertical Lift Shuttles.",
     )
     vertical_lift_kind = fields.Selection(
@@ -20,6 +19,7 @@ class StockLocation(models.Model):
             ("cell", "Cell"),
         ],
         compute="_compute_vertical_lift_kind",
+        recursive=True,
         store=True,
     )
 
@@ -35,6 +35,7 @@ class StockLocation(models.Model):
     vertical_lift_shuttle_id = fields.Many2one(
         comodel_name="vertical.lift.shuttle",
         compute="_compute_vertical_lift_shuttle_id",
+        recursive=True,
         store=True,
     )
 
@@ -107,11 +108,15 @@ class StockLocation(models.Model):
         ``VerticalLiftShuttle._hardware_send_message()``.
         """
         if self.vertical_lift_shuttle_id.hardware == "simulation":
-            message = _("Opening tray {}.").format(self.name)
+            message = self.env._("Opening tray %(name)s.", name=self.name)
             if cell_location:
                 from_left, from_bottom = cell_location.tray_cell_center_position()
-                message += _("<br/>Laser pointer on x{} y{} ({}mm, {}mm)").format(
-                    cell_location.posx, cell_location.posy, from_left, from_bottom
+                message += self.env._(
+                    "<br/>Laser pointer on x%(x)s y%(y)s (%(left)smm, %(bottom)smm)",
+                    x=cell_location.posx,
+                    y=cell_location.posy,
+                    left=from_left,
+                    bottom=from_bottom,
                 )
             return message.encode("utf-8")
         else:
@@ -142,7 +147,10 @@ class StockLocation(models.Model):
             self._hardware_vertical_lift_fetch_tray(cell_location=cell_location)
         else:
             raise exceptions.UserError(
-                _("Cannot fetch a vertical lift tray on location %s") % (self.name,)
+                self.env._(
+                    "Cannot fetch a vertical lift tray on location %s",
+                    self.name,
+                )
             )
         return True
 

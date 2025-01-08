@@ -1,7 +1,7 @@
 # Copyright 2019 Camptocamp SA
 # License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl).
 
-from odoo import _, fields, models
+from odoo import fields, models
 from odoo.osv.expression import AND
 
 
@@ -70,7 +70,9 @@ class VerticalLiftOperationPut(models.Model):
             self.next_step()
         else:
             self.env.user.notify_warning(
-                _("No move line found for barcode {}").format(barcode),
+                self.env._(
+                    "No move line found for barcode %(barcode)s", barcode=barcode
+                ),
                 params=self._get_user_notification_params(),
             )
 
@@ -84,14 +86,17 @@ class VerticalLiftOperationPut(models.Model):
                     self.next_step()
             else:
                 self.env.user.notify_warning(
-                    _('No free space for tray type "{}" in this shuttle.').format(
-                        tray_type.display_name
+                    self.env._(
+                        "No free space for tray type %(name)s in this shuttle.",
+                        name=tray_type.display_name,
                     ),
                     params=self._get_user_notification_params(),
                 )
         else:
             self.env.user.notify_warning(
-                _("No tray type found for barcode {}").format(barcode),
+                self.env._(
+                    "No tray type found for barcode %(barcode)s", barcode=barcode
+                ),
                 params=self._get_user_notification_params(),
             )
 
@@ -105,7 +110,7 @@ class VerticalLiftOperationPut(models.Model):
         if package:
             return self._find_move_line_for_package(package)
 
-        lot = self.env["stock.production.lot"].search([("name", "=", barcode)])
+        lot = self.env["stock.lot"].search([("name", "=", barcode)])
         if lot:
             return self._find_move_line_for_lot(package)
 

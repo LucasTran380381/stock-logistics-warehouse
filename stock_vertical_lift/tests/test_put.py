@@ -1,7 +1,10 @@
 # Copyright 2019 Camptocamp SA
 # License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl).
+import logging
 
 from .common import VerticalLiftCase
+
+_logger = logging.getLogger(__name__)
 
 
 class TestPut(VerticalLiftCase):
@@ -34,10 +37,13 @@ class TestPut(VerticalLiftCase):
     def test_put_count_move_lines(self):
         # If stock_picking_cancel_confirm is installed, we need to explicitly
         # confirm the cancellation.
-        try:
+        if hasattr(self.picking_in, "cancel_confirm"):
             self.picking_in.cancel_confirm = True
-        except AttributeError:
-            pass
+        else:
+            _logger.debug(
+                "stock_picking_cancel_confirm module is not installed - "
+                "skipping cancel confirmation"
+            )
         self.picking_in.action_cancel()
         put1 = self._create_simple_picking_in(
             self.product_socks, 10, self.location_1a_x1y1
@@ -139,10 +145,10 @@ class TestPut(VerticalLiftCase):
         operation.current_move_line_id = self.in_move_line
         operation.current_move_line_id.location_dest_id = self.location_1a_x1y1
         operation.state = "save"
-        qty_to_process = self.in_move_line.product_qty
+        qty_to_process = self.in_move_line.quantity
         operation.button_save()
         self.assertEqual(self.in_move_line.state, "done")
-        self.assertEqual(self.in_move_line.qty_done, qty_to_process)
+        self.assertEqual(self.in_move_line.quantity, qty_to_process)
 
     def test_transition_button_release(self):
         operation = self._open_screen("put")
@@ -151,7 +157,6 @@ class TestPut(VerticalLiftCase):
         operation.current_move_line_id = move_line
         operation.current_move_line_id.location_dest_id = self.location_1a_x1y1
         # for the test, we'll consider our last line has been delivered
-        move_line.qty_done = move_line.product_qty
         move_line.move_id._action_done()
 
         operation = self._open_screen("put")
