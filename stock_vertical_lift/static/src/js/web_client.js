@@ -17,9 +17,8 @@ odoo.define("stock_vertical_lift.WebClient", function (require) {
                 this.is_shuttle_notification(n)
             );
             if (shuttle_notifications.length > 0) {
-                const filtered_shuttle_notifications = this.filter_shuttle_notifications(
-                    shuttle_notifications
-                );
+                const filtered_shuttle_notifications =
+                    this.filter_shuttle_notifications(shuttle_notifications);
                 // Notifications will be displayed if:
                 // 1) they're not shuttle-related
                 // 2) they're included in the filtered shuttle notifications

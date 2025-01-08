@@ -426,7 +426,7 @@ class VerticalLiftOperationTransfer(models.AbstractModel):
     def on_barcode_scanned(self, barcode):
         self.ensure_one()
         self.env.user.notify_info(
-            "Scanned barcode: {}. Not implemented.".format(barcode),
+            f"Scanned barcode: {barcode}. Not implemented.",
             params=self._get_user_notification_params(),
         )
 

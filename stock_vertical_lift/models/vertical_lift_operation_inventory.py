@@ -258,7 +258,7 @@ class VerticalLiftOperationInventory(models.Model):
 
     def button_save(self):
         self.ensure_one()
-        if not self.step() in ("quantity", "confirm_wrong_quantity"):
+        if self.step() not in ("quantity", "confirm_wrong_quantity"):
             return
         self.next_step()
         if self.step() == "noop":

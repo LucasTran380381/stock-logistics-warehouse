@@ -30,8 +30,7 @@
             <xpath
                 expr="//div[hasclass('o_shuttle_header_right')]/field[@name='number_of_ops']/following-sibling::span"
                 position="replace"
-            >
-            </xpath>
+            />
         </field>
     </record>
 </odoo>

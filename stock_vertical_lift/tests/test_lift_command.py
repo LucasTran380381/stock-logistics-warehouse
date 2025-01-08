@@ -18,7 +18,7 @@ class TestLiftCommand(VerticalLiftCase):
         with mute_logger(method_name):
             with self.assertRaisesRegex(exceptions.UserError, message):
                 command_id.record_answer("0|test|1")
-        command_id.record_answer("0|{}|1".format(command_id.name))
+        command_id.record_answer(f"0|{command_id.name}|1")
         self.shuttle.command_ids.create(
             {
                 "shuttle_id": self.shuttle.id,

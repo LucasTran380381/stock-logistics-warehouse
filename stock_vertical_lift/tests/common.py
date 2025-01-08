@@ -65,7 +65,7 @@ class VerticalLiftCase(common.LocationTrayTypeCase):
         )
 
     def _open_screen(self, mode, shuttle=None):
-        getattr(shuttle or self.shuttle, "switch_{}".format(mode))()
+        getattr(shuttle or self.shuttle, f"switch_{mode}")()
         # opening the screen can do some initialization for the steps
         action = (shuttle or self.shuttle).action_open_screen()
         return self.env[action["res_model"]].browse(action["res_id"])

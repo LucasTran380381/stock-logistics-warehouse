@@ -17,13 +17,13 @@ Vertical Lift
     :target: http://www.gnu.org/licenses/agpl-3.0-standalone.html
     :alt: License: AGPL-3
 .. |badge3| image:: https://img.shields.io/badge/github-OCA%2Fstock--logistics--warehouse-lightgray.png?logo=github
-    :target: https://github.com/OCA/stock-logistics-warehouse/tree/14.0/stock_vertical_lift
+    :target: https://github.com/OCA/stock-logistics-warehouse/tree/18.0/stock_vertical_lift
     :alt: OCA/stock-logistics-warehouse
 .. |badge4| image:: https://img.shields.io/badge/weblate-Translate%20me-F47D42.png
-    :target: https://translation.odoo-community.org/projects/stock-logistics-warehouse-14-0/stock-logistics-warehouse-14-0-stock_vertical_lift
+    :target: https://translation.odoo-community.org/projects/stock-logistics-warehouse-18-0/stock-logistics-warehouse-18-0-stock_vertical_lift
     :alt: Translate me on Weblate
 .. |badge5| image:: https://img.shields.io/badge/runboat-Try%20me-875A7B.png
-    :target: https://runboat.odoo-community.org/builds?repo=OCA/stock-logistics-warehouse&target_branch=14.0
+    :target: https://runboat.odoo-community.org/builds?repo=OCA/stock-logistics-warehouse&target_branch=18.0
     :alt: Try me on Runboat
 
 |badge1| |badge2| |badge3| |badge4| |badge5|
@@ -46,60 +46,62 @@ Configuration
 =============
 
 General
-~~~~~~~
+-------
 
 In Inventory Settings, you must have:
 
- * Storage Locations
- * Multi-Warehouses
- * Multi-Step Routes
+   - Storage Locations
+   - Multi-Warehouses
+   - Multi-Step Routes
 
 Locations
-~~~~~~~~~
+---------
 
 Additional configuration parameters are added in Locations:
 
-* Sub-locations of a location with the "Is a Vertical Lift View Location"
-  activated are considered as "Shuttles". A shuttle is a vertical lift shelf.
-* Sub-locations of shuttles are considered as "Trays", which is a tier of a
-  shuttle. When a tray is created, a tray type must be selected. When saved, the
-  tray location will automatically create as many sub-locations - called
-  "Cells" - as the tray type contains.
-* The tray type of a tray can be changed as long as none of its cell contains
-  products. When changed, it archives the cells and creates new ones as
-  configured on the new tray type.
+- Sub-locations of a location with the "Is a Vertical Lift View
+  Location" activated are considered as "Shuttles". A shuttle is a
+  vertical lift shelf.
+- Sub-locations of shuttles are considered as "Trays", which is a tier
+  of a shuttle. When a tray is created, a tray type must be selected.
+  When saved, the tray location will automatically create as many
+  sub-locations - called "Cells" - as the tray type contains.
+- The tray type of a tray can be changed as long as none of its cell
+  contains products. When changed, it archives the cells and creates new
+  ones as configured on the new tray type.
 
 Tray types
-~~~~~~~~~~
+----------
 
-Tray types can be configured in the Inventory settings.
-A tray type defines how much cells a tray can hold. It is a square or rectangle
-matrix of n cols * m rows.
+Tray types can be configured in the Inventory settings. A tray type
+defines how much cells a tray can hold. It is a square or rectangle
+matrix of n cols \* m rows.
 
 Vertical Lift Shuttles
-~~~~~~~~~~~~~~~~~~~~~~
+----------------------
 
-The Shuttles are the Vertical Lift Trays. One Shuttle entity has to be created
-in Odoo for each physical shuttle. Depending of the subsidiary addons installed
-(eg. Kardex), different options may be required (host address, ...). The base
-addon only includes shuttles of kind "simulation" which will not send orders to
-the hardware.
+The Shuttles are the Vertical Lift Trays. One Shuttle entity has to be
+created in Odoo for each physical shuttle. Depending of the subsidiary
+addons installed (eg. Kardex), different options may be required (host
+address, ...). The base addon only includes shuttles of kind
+"simulation" which will not send orders to the hardware.
 
 Put-away configuration
-~~~~~~~~~~~~~~~~~~~~~~
+----------------------
 
-If you want to use put-away in the vertical lift, the Receipts must have the
-vertical lift view as destination. E.g. create put-away rules on the products
-so when they arrive in WH/Stock, they are stored in WH/Stock/Vertical Lift. On
-the put-away screen, when scanning the tray type to store, the destination will
-be updated with an available cell of the same tray type in the current shuttle.
+If you want to use put-away in the vertical lift, the Receipts must have
+the vertical lift view as destination. E.g. create put-away rules on the
+products so when they arrive in WH/Stock, they are stored in
+WH/Stock/Vertical Lift. On the put-away screen, when scanning the tray
+type to store, the destination will be updated with an available cell of
+the same tray type in the current shuttle.
 
 Barcodes
-~~~~~~~~
+--------
 
-The operations allowed in the screen for the vertical lift (save, release, skip)
-can be triggered using a barcode. For this, print the barcodes contained in the
-folder 'images'.
+The operations allowed in the screen for the vertical lift (save,
+release, skip) can be triggered using a barcode. For this, print the
+barcodes contained in the folder 'images'.
 
 Development
 ===========
@@ -109,14 +111,15 @@ The barcodes used are of the type Code 128 (with the code set B).
 Known issues / Roadmap
 ======================
 
-* Complete screen workflows (currently enough for a demo, not for production)
-* Inventory: find a way to have a nice autofocus for quantity, still compatible
-  with barcode scanner (Odoo disables the autofocus when using barcode, which
-  makes sense)
-* Put-away: handle packages
-* Handle "multi-shuttle" put-away
-* Create glue module for product_expiry
-* Challenge the save + release buttons and workflow
+- Complete screen workflows (currently enough for a demo, not for
+  production)
+- Inventory: find a way to have a nice autofocus for quantity, still
+  compatible with barcode scanner (Odoo disables the autofocus when
+  using barcode, which makes sense)
+- Put-away: handle packages
+- Handle "multi-shuttle" put-away
+- Create glue module for product_expiry
+- Challenge the save + release buttons and workflow
 
 Bug Tracker
 ===========
@@ -124,7 +127,7 @@ Bug Tracker
 Bugs are tracked on `GitHub Issues <https://github.com/OCA/stock-logistics-warehouse/issues>`_.
 In case of trouble, please check there if your issue has already been reported.
 If you spotted it first, help us to smash it by providing a detailed and welcomed
-`feedback <https://github.com/OCA/stock-logistics-warehouse/issues/new?body=module:%20stock_vertical_lift%0Aversion:%2014.0%0A%0A**Steps%20to%20reproduce**%0A-%20...%0A%0A**Current%20behavior**%0A%0A**Expected%20behavior**>`_.
+`feedback <https://github.com/OCA/stock-logistics-warehouse/issues/new?body=module:%20stock_vertical_lift%0Aversion:%2018.0%0A%0A**Steps%20to%20reproduce**%0A-%20...%0A%0A**Current%20behavior**%0A%0A**Expected%20behavior**>`_.
 
 Do not contact contributors directly about support or help with technical issues.
 
@@ -132,28 +135,28 @@ Credits
 =======
 
 Authors
-~~~~~~~
+-------
 
 * Camptocamp
 
 Contributors
-~~~~~~~~~~~~
+------------
 
-* Guewen Baconnier <guewen.baconnier@camptocamp.com>
+- Guewen Baconnier <guewen.baconnier@camptocamp.com>
 
 Trobz
 
-* Dung Tran <dungtd@trobz.com>
+- Dung Tran <dungtd@trobz.com>
 
 Other credits
-~~~~~~~~~~~~~
+-------------
 
 The development of this module has been financially supported by:
 
-* Camptocamp
+- Camptocamp
 
 Maintainers
-~~~~~~~~~~~
+-----------
 
 This module is maintained by the OCA.
 
@@ -165,6 +168,6 @@ OCA, or the Odoo Community Association, is a nonprofit organization whose
 mission is to support the collaborative development of Odoo features and
 promote its widespread use.
 
-This module is part of the `OCA/stock-logistics-warehouse <https://github.com/OCA/stock-logistics-warehouse/tree/14.0/stock_vertical_lift>`_ project on GitHub.
+This module is part of the `OCA/stock-logistics-warehouse <https://github.com/OCA/stock-logistics-warehouse/tree/18.0/stock_vertical_lift>`_ project on GitHub.
 
 You are welcome to contribute. To learn how please visit https://odoo-community.org/page/Contribute.

@@ -3,8 +3,7 @@
 
 import os
 import unittest
-
-import mock
+from unittest import mock
 
 from odoo.tests.common import HttpSavepointCase
 from odoo.tools import mute_logger

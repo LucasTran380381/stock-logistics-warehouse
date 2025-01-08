@@ -239,10 +239,10 @@ class TestPick(VerticalLiftCase):
             {
                 "selected": [expected_x, expected_y],
                 # fmt: off
-                'cells': [
+                "cells": [
                     [0, 0, 0, 0],
                     [1, 1, 1, 0],
-                ]
+                ],
                 # fmt: on
             },
         )

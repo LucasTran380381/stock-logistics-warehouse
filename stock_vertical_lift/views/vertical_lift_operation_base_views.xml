@@ -92,8 +92,7 @@
                         <field name="state" invisible="0" readonly="True" />
                     </div>
                 </div>
-                <div class="o_shuttle_data">
-                </div>
+                <div class="o_shuttle_data" />
                 <field name="_barcode_scanned" widget="barcode_handler" />
             </form>
         </field>
