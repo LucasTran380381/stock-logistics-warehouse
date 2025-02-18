@@ -31,6 +31,7 @@
         "views/vertical_lift_operation_put_views.xml",
         "views/vertical_lift_operation_inventory_views.xml",
         "views/shuttle_screen_templates.xml",
+        "views/res_config_settings_views.xml",
         "security/ir.model.access.csv",
         "data/ir_sequence.xml",
     ],

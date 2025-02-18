@@ -27,9 +27,8 @@ class StockLocation(models.Model):
     # It's there only to be in the depends of 'vertical_lift_shuttle_id', which
     # give the unique shuttle for any location in the tree (whether it's a
     # shuttle, a tray or a cell)
-    inverse_vertical_lift_shuttle_ids = fields.One2many(
-        comodel_name="vertical.lift.shuttle", inverse_name="location_id", readonly=True
-    )
+    inverse_vertical_lift_shuttle_ids = fields.One2many(comodel_name="vertical.lift.shuttle",
+                                                        inverse_name="location_id")
     # compute the unique shuttle for any shuttle, tray or cell location, by
     # going through the parents
     vertical_lift_shuttle_id = fields.Many2one(

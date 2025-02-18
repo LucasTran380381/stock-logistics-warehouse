@@ -6,8 +6,6 @@ from collections import namedtuple
 
 from odoo import api, fields, models
 
-from odoo.addons.base_sparse_field.models.fields import Serialized
-
 _logger = logging.getLogger(__name__)
 
 
@@ -385,7 +383,7 @@ class VerticalLiftOperationTransfer(models.AbstractModel):
     tray_type_code = fields.Char(compute="_compute_tray_data", string="Tray Code")
     tray_x = fields.Integer(string="X", compute="_compute_tray_data")
     tray_y = fields.Integer(string="Y", compute="_compute_tray_data")
-    tray_matrix = Serialized(string="Cells", compute="_compute_tray_data")
+    tray_matrix = fields.Json(string="Cells", compute="_compute_tray_data")
     tray_qty = fields.Float(string="Stock Quantity", compute="_compute_tray_qty")
 
     # current operation information
